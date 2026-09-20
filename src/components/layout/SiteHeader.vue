@@ -8,6 +8,7 @@ function toggleTheme() {
   isDark.value = !isDark.value
   const theme = isDark.value ? 'dark' : 'light'
   document.documentElement.dataset.theme = theme
+  document.querySelector('meta[name="color-scheme"]')?.setAttribute('content', isDark.value ? 'dark' : 'only light')
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark.value ? '#0b1220' : '#f7f5f0')
 
   try {

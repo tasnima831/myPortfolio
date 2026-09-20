@@ -1,7 +1,7 @@
 @import './base.css';
 
 :root {
-  color-scheme: light;
+  color-scheme: only light;
   --header-space: 80px;
   --color-background: #f7f5f0;
   --color-surface: #ffffff;
@@ -32,7 +32,7 @@
 }
 
 :root[data-theme='dark'] {
-  color-scheme: dark;
+  color-scheme: only dark;
   --color-background: #0b1220;
   --color-surface: #142033;
   --color-surface-raised: #1b2c44;

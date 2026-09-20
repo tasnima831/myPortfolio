@@ -2,11 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
+    <meta name="darkreader-lock">
+    <meta name="color-scheme" content="only light">
     <meta name="theme-color" content="#f7f5f0">
     <script>
       try {
         if (localStorage.getItem('portfolio-theme') === 'dark') {
           document.documentElement.dataset.theme = 'dark'
+          document.querySelector('meta[name="color-scheme"]').setAttribute('content', 'dark')
           document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0b1220')
         }
       } catch {
