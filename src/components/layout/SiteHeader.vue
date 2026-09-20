@@ -13,6 +13,7 @@ const sections = [
 ]
 const isDark = ref(document.documentElement.dataset.theme !== 'light')
 const activeSection = ref('home')
+const isMenuOpen = ref(false)
 const nav = ref(null)
 let scrollFrame
 let clickTimer
@@ -43,6 +44,7 @@ function scheduleActiveSectionUpdate() {
 
 function selectSection(id) {
   activeSection.value = id
+  isMenuOpen.value = false
   clickedSection = id
   window.clearTimeout(clickTimer)
   clickTimer = window.setTimeout(() => {
@@ -94,9 +96,20 @@ function toggleTheme() {
 </script>
 
 <template>
-  <header class="site-header">
+  <header class="site-header" @keydown.esc="isMenuOpen = false">
     <RouterLink class="site-name" to="/">Tasnima Akther Tisha</RouterLink>
-    <nav ref="nav" aria-label="Main navigation">
+    <button
+      class="mobile-menu-toggle"
+      type="button"
+      aria-controls="header-navigation"
+      :aria-expanded="isMenuOpen"
+      :aria-label="isMenuOpen ? 'Close menu' : 'Open menu'"
+      @click="isMenuOpen = !isMenuOpen"
+    >
+      <svg v-if="isMenuOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5 19 19M19 5 5 19" /></svg>
+      <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+    </button>
+    <div id="header-navigation" class="header-navigation" :class="{ 'is-open': isMenuOpen }">
       <button
         class="theme-toggle"
         type="button"
@@ -113,6 +126,7 @@ function toggleTheme() {
           <path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5a8.5 8.5 0 1 0 12 12Z" />
         </svg>
       </button>
+      <nav ref="nav" aria-label="Main navigation">
       <RouterLink
         v-for="section in sections"
         :key="section.id"
@@ -121,6 +135,7 @@ function toggleTheme() {
         :aria-current="activeSection === section.id ? 'location' : undefined"
         @click="selectSection(section.id)"
       >{{ section.label }}</RouterLink>
-    </nav>
+      </nav>
+    </div>
   </header>
 </template>
