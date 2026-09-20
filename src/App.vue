@@ -1,11 +1,13 @@
 <script setup>
-import { RouterView } from 'vue-router'
+import { RouterView, useRoute } from 'vue-router'
 import SiteHeader from './components/layout/SiteHeader.vue'
 import SiteFooter from './components/layout/SiteFooter.vue'
+
+const route = useRoute()
 </script>
 
 <template>
-  <div class="portfolio">
+  <div class="portfolio" :class="{ 'portfolio-detail': route.name === 'project-detail' }">
     <SiteHeader />
     <main class="page-main">
       <RouterView />

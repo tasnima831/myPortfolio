@@ -1,13 +1,17 @@
+<script setup>
+import { RouterLink } from 'vue-router'
+</script>
+
 <template>
   <header class="site-header">
-    <a class="site-name" href="#home">Tasnima Akther Tisha</a>
+    <RouterLink class="site-name" to="/">Tasnima Akther Tisha</RouterLink>
     <nav aria-label="Main navigation">
-      <a href="#home">Home</a>
-      <a href="#about">About</a>
-      <a href="#skills">Skills</a>
-      <a href="#education">Education</a>
-      <a href="#projects">Projects</a>
-      <a href="#contact">Contact</a>
+      <RouterLink to="/#home">Home</RouterLink>
+      <RouterLink to="/#about">About</RouterLink>
+      <RouterLink to="/#skills">Skills</RouterLink>
+      <RouterLink to="/#education">Education</RouterLink>
+      <RouterLink to="/#projects">Projects</RouterLink>
+      <RouterLink to="/#contact">Contact</RouterLink>
     </nav>
   </header>
 </template>
