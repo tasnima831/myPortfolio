@@ -1,13 +1,43 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 
 const form = reactive({ name: '', email: '', projectType: '', message: '' })
 const isSending = ref(false)
 const submissionStatus = ref('')
 const submissionFailed = ref(false)
+const projectTypes = ['Website development', 'Laravel application', 'Website redesign', 'Other project']
+const isProjectMenuOpen = ref(false)
+const projectMenu = ref(null)
+
+function closeProjectMenu(event) {
+  if (!projectMenu.value?.contains(event.target)) isProjectMenuOpen.value = false
+}
+
+onMounted(() => document.addEventListener('pointerdown', closeProjectMenu))
+onBeforeUnmount(() => document.removeEventListener('pointerdown', closeProjectMenu))
+
+function chooseProjectType(type) {
+  form.projectType = type
+  isProjectMenuOpen.value = false
+  projectMenu.value?.querySelector('.project-type-trigger')?.focus()
+}
+
+function handleProjectMenuKeydown(event) {
+  if (event.key === 'Escape') {
+    isProjectMenuOpen.value = false
+    projectMenu.value?.querySelector('.project-type-trigger')?.focus()
+  }
+}
 
 async function sendMessage() {
   if (isSending.value) return
+
+  if (!form.projectType) {
+    submissionFailed.value = true
+    submissionStatus.value = 'Please choose a project type.'
+    projectMenu.value?.querySelector('.project-type-trigger')?.focus()
+    return
+  }
 
   isSending.value = true
   submissionStatus.value = ''
@@ -82,14 +112,32 @@ async function sendMessage() {
         <label for="contact-email">Email</label>
         <input id="contact-email" v-model.trim="form.email" name="email" type="email" autocomplete="email" placeholder="you@example.com" maxlength="254" required />
 
-        <label for="contact-type">Project type</label>
-        <select id="contact-type" v-model="form.projectType" name="project_type" required>
-          <option value="" disabled>What can I help you with?</option>
-          <option>Website development</option>
-          <option>Laravel application</option>
-          <option>Website redesign</option>
-          <option>Other project</option>
-        </select>
+        <label id="contact-type-label">Project type</label>
+        <div ref="projectMenu" class="project-type-menu" @keydown="handleProjectMenuKeydown">
+          <button
+            type="button"
+            class="project-type-trigger"
+            aria-haspopup="listbox"
+            :aria-expanded="isProjectMenuOpen"
+            aria-labelledby="contact-type-label contact-type-value"
+            @click="isProjectMenuOpen = !isProjectMenuOpen"
+            @keydown.down.prevent="isProjectMenuOpen = true"
+          >
+            <span id="contact-type-value">{{ form.projectType || 'What can I help you with?' }}</span>
+            <span class="project-type-chevron" aria-hidden="true">⌄</span>
+          </button>
+          <div v-if="isProjectMenuOpen" class="project-type-options" role="listbox" aria-labelledby="contact-type-label">
+            <button
+              v-for="type in projectTypes"
+              :key="type"
+              type="button"
+              class="project-type-option"
+              role="option"
+              :aria-selected="form.projectType === type"
+              @click="chooseProjectType(type)"
+            >{{ type }}</button>
+          </div>
+        </div>
 
         <label for="contact-message">Message</label>
         <textarea id="contact-message" v-model.trim="form.message" name="message" placeholder="Tell me about your project, timeline, and ideas..." rows="5" minlength="10" maxlength="5000" required />

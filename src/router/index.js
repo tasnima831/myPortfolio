@@ -19,7 +19,7 @@ const router = createRouter({
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) return savedPosition
     if (to.hash) {
-      return { el: to.hash, top: document.querySelector('.site-header')?.offsetHeight ?? 80 }
+      return { el: to.hash, top: (document.querySelector('.site-header')?.offsetHeight ?? 60) + 20 }
     }
     return { top: 0 }
   },

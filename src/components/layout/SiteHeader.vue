@@ -1,18 +1,92 @@
 <script setup>
-import { ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
 
-const isDark = ref(document.documentElement.dataset.theme === 'dark')
+const route = useRoute()
+const sections = [
+  { id: 'home', label: 'Home' },
+  { id: 'about', label: 'About' },
+  { id: 'skills', label: 'Skills' },
+  { id: 'education', label: 'Education' },
+  { id: 'projects', label: 'Projects' },
+  { id: 'contact', label: 'Contact' },
+]
+const isDark = ref(document.documentElement.dataset.theme !== 'light')
+const activeSection = ref('home')
+const nav = ref(null)
+let scrollFrame
+let clickTimer
+let clickedSection = null
+
+function updateActiveSection() {
+  scrollFrame = null
+  if (route.name === 'project-detail') {
+    activeSection.value = 'projects'
+    return
+  }
+  if (clickedSection) return
+
+  const viewportMarker = window.innerHeight * 0.55
+  let current = 'home'
+  for (const section of sections) {
+    const element = document.getElementById(section.id)
+    if (element && element.getBoundingClientRect().top <= viewportMarker) {
+      current = section.id
+    }
+  }
+  activeSection.value = current
+}
+
+function scheduleActiveSectionUpdate() {
+  if (scrollFrame == null) scrollFrame = window.requestAnimationFrame(updateActiveSection)
+}
+
+function selectSection(id) {
+  activeSection.value = id
+  clickedSection = id
+  window.clearTimeout(clickTimer)
+  clickTimer = window.setTimeout(() => {
+    clickedSection = null
+    scheduleActiveSectionUpdate()
+  }, 900)
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', scheduleActiveSectionUpdate, { passive: true })
+  window.addEventListener('resize', scheduleActiveSectionUpdate)
+  scheduleActiveSectionUpdate()
+})
+
+watch(() => route.fullPath, () => nextTick(scheduleActiveSectionUpdate))
+
+watch(activeSection, async () => {
+  await nextTick()
+  if (!nav.value || nav.value.scrollWidth <= nav.value.clientWidth) return
+
+  const activeLink = nav.value.querySelector('[aria-current="location"]')
+  if (!activeLink) return
+  const navBounds = nav.value.getBoundingClientRect()
+  const linkBounds = activeLink.getBoundingClientRect()
+  const left = nav.value.scrollLeft + linkBounds.left - navBounds.left - (navBounds.width - linkBounds.width) / 2
+  nav.value.scrollTo({ left, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', scheduleActiveSectionUpdate)
+  window.removeEventListener('resize', scheduleActiveSectionUpdate)
+  window.cancelAnimationFrame(scrollFrame)
+  window.clearTimeout(clickTimer)
+})
 
 function toggleTheme() {
   isDark.value = !isDark.value
   const theme = isDark.value ? 'dark' : 'light'
   document.documentElement.dataset.theme = theme
   document.querySelector('meta[name="color-scheme"]')?.setAttribute('content', isDark.value ? 'dark' : 'only light')
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark.value ? '#0b1220' : '#f7f5f0')
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark.value ? '#080808' : '#f7f7f3')
 
   try {
-    localStorage.setItem('portfolio-theme', theme)
+    localStorage.setItem('portfolio-theme-v2', theme)
   } catch {
     // The switch still works when browser storage is unavailable.
   }
@@ -22,7 +96,7 @@ function toggleTheme() {
 <template>
   <header class="site-header">
     <RouterLink class="site-name" to="/">Tasnima Akther Tisha</RouterLink>
-    <nav aria-label="Main navigation">
+    <nav ref="nav" aria-label="Main navigation">
       <button
         class="theme-toggle"
         type="button"
@@ -39,12 +113,14 @@ function toggleTheme() {
           <path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5a8.5 8.5 0 1 0 12 12Z" />
         </svg>
       </button>
-      <RouterLink to="/#home">Home</RouterLink>
-      <RouterLink to="/#about">About</RouterLink>
-      <RouterLink to="/#skills">Skills</RouterLink>
-      <RouterLink to="/#education">Education</RouterLink>
-      <RouterLink to="/#projects">Projects</RouterLink>
-      <RouterLink to="/#contact">Contact</RouterLink>
+      <RouterLink
+        v-for="section in sections"
+        :key="section.id"
+        :to="`/#${section.id}`"
+        :class="{ 'is-active': activeSection === section.id }"
+        :aria-current="activeSection === section.id ? 'location' : undefined"
+        @click="selectSection(section.id)"
+      >{{ section.label }}</RouterLink>
     </nav>
   </header>
 </template>

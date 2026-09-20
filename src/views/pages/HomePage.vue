@@ -8,33 +8,57 @@ import ContactPage from './ContactPage.vue'
 
 const firstName = 'Tasnima'
 const middleName = 'Akther '
-const lastName = 'Tisha.'
+const lastName = 'Tisha'
 const totalCharacters = firstName.length + middleName.length + lastName.length
 const typedCharacters = ref(0)
 const visibleFirstName = computed(() => firstName.slice(0, typedCharacters.value))
 const visibleMiddleName = computed(() => middleName.slice(0, Math.max(0, typedCharacters.value - firstName.length)))
 const visibleLastName = computed(() => lastName.slice(0, Math.max(0, typedCharacters.value - firstName.length - middleName.length)))
+const pageRoot = ref(null)
 let typingTimer
+let typingStartTimer
+let sectionObserver
 
 onMounted(() => {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (reduceMotion) {
     typedCharacters.value = totalCharacters
-    return
+  } else {
+    typingStartTimer = window.setTimeout(() => {
+      typingTimer = window.setInterval(() => {
+        typedCharacters.value += 1
+        if (typedCharacters.value >= totalCharacters) {
+          window.clearInterval(typingTimer)
+        }
+      }, 90)
+    }, 250)
   }
 
-  typingTimer = window.setInterval(() => {
-    typedCharacters.value += 1
-    if (typedCharacters.value >= totalCharacters) {
-      window.clearInterval(typingTimer)
-    }
-  }, 90)
+  if (reduceMotion || !('IntersectionObserver' in window)) return
+
+  sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return
+      entry.target.classList.add('is-visible')
+      sectionObserver.unobserve(entry.target)
+    })
+  }, { rootMargin: '0px 0px -10% 0px', threshold: 0.01 })
+
+  pageRoot.value.querySelectorAll('.page-section').forEach((section) => {
+    section.classList.add('section-reveal')
+    sectionObserver.observe(section)
+  })
 })
 
-onUnmounted(() => window.clearInterval(typingTimer))
+onUnmounted(() => {
+  window.clearTimeout(typingStartTimer)
+  window.clearInterval(typingTimer)
+  sectionObserver?.disconnect()
+})
 </script>
 
 <template>
-  <div>
+  <div ref="pageRoot">
     <section id="home" class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
         <p class="eyebrow">Hello, I'm</p>
@@ -78,8 +102,8 @@ onUnmounted(() => window.clearInterval(typingTimer))
           </a>
         </div>
       </div>
-      <div class="hero-art" aria-hidden="true">
-        <div class="hero-art-inner">T<span>.</span></div>
+      <div class="hero-art">
+        <img src="/images/tisha-portrait.jpg" alt="Portrait of Tasnima Akther Tisha" width="1152" height="2624" fetchpriority="high" />
         <span class="hero-art-label">Design &amp; development</span>
       </div>
     </section>

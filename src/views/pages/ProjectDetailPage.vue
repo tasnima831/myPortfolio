@@ -1,11 +1,26 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { projects } from '../../data/projects'
 
 const route = useRoute()
 const project = computed(() => projects.find((item) => item.slug === route.params.slug))
 const activeImage = ref(0)
+const isPlaying = ref(true)
+const isInteracting = ref(false)
+let slideshowTimer
+
+onMounted(() => {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    isPlaying.value = false
+  }
+
+  slideshowTimer = window.setInterval(() => {
+    if (isPlaying.value && !isInteracting.value && !document.hidden) changeImage(1)
+  }, 4500)
+})
+
+onUnmounted(() => window.clearInterval(slideshowTimer))
 
 watch(() => route.params.slug, () => {
   activeImage.value = 0
@@ -29,12 +44,24 @@ function changeImage(direction) {
       </ul>
     </header>
 
-    <section class="detail-gallery" aria-label="Project screenshots">
-      <img class="detail-gallery-main" :src="project.images[activeImage].src" :alt="project.images[activeImage].alt" />
+    <section
+      class="detail-gallery"
+      aria-label="Project screenshots"
+      @pointerenter="isInteracting = true"
+      @pointerleave="isInteracting = false"
+      @focusin="isInteracting = true"
+      @focusout="isInteracting = false"
+    >
+      <div class="detail-gallery-stage">
+        <Transition name="gallery-fade">
+          <img :key="project.images[activeImage].src" class="detail-gallery-main" :src="project.images[activeImage].src" :alt="project.images[activeImage].alt" />
+        </Transition>
+      </div>
       <div class="detail-gallery-controls">
         <button type="button" aria-label="Previous image" @click="changeImage(-1)">&larr;</button>
         <span>{{ String(activeImage + 1).padStart(2, '0') }} / {{ String(project.images.length).padStart(2, '0') }}</span>
         <button type="button" aria-label="Next image" @click="changeImage(1)">&rarr;</button>
+        <button v-if="project.images.length > 1" type="button" class="detail-gallery-play" :aria-label="isPlaying ? 'Pause slideshow' : 'Play slideshow'" :aria-pressed="isPlaying" @click="isPlaying = !isPlaying">{{ isPlaying ? 'Pause' : 'Play' }}</button>
       </div>
       <div class="detail-gallery-thumbnails">
         <button v-for="(image, index) in project.images" :key="image.src" type="button" :aria-label="`Show image ${index + 1}`" :aria-pressed="activeImage === index" @click="activeImage = index">

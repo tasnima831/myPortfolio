@@ -16,7 +16,7 @@
           <p>GPA: 4.83</p>
         </article>
         <article>
-          <span class="education-years">2018–2020</span>
+          <span class="education-years">2019–2020</span>
           <h3>SSC · Science</h3>
           <p>Hazrat Shahparan (R) High School</p>
           <p>GPA: 4.83</p>
