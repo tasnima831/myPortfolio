@@ -7,7 +7,8 @@ const icons = {
   JavaScript: 'javascript.svg',
   'Tailwind CSS': 'tailwindcss.svg',
   PHP: 'php.svg',
-  MySQL: 'mysql.svg',
+  'Node.js': 'nodejs.svg',
+  MySQL: 'mysql-original-wordmark.svg',
   Laravel: 'laravel.svg',
   'Vue.js': 'vuejs.svg',
   Git: 'git.svg',
@@ -21,5 +22,10 @@ const icons = {
 </script>
 
 <template>
-  <img class="skill-icon" :src="`/skills/${icons[props.name]}`" alt="" />
+  <img
+    class="skill-icon"
+    :class="{ 'skill-icon-light-background': ['GitHub', 'Notion', 'Vercel'].includes(props.name), 'skill-icon-mysql': props.name === 'MySQL' }"
+    :src="`/skills/${icons[props.name]}`"
+    alt=""
+  />
 </template>

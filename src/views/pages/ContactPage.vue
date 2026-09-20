@@ -1,19 +1,51 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 
 const form = reactive({ name: '', email: '', projectType: '', message: '' })
+const isSending = ref(false)
+const submissionStatus = ref('')
+const submissionFailed = ref(false)
 
-function prepareEmail() {
-  const subject = `Project inquiry: ${form.projectType}`
-  const body = [
-    `Name: ${form.name}`,
-    `Email: ${form.email}`,
-    `Project type: ${form.projectType}`,
-    '',
-    form.message,
-  ].join('\n')
+async function sendMessage() {
+  if (isSending.value) return
 
-  window.location.href = `mailto:shraboniakter554@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  isSending.value = true
+  submissionStatus.value = ''
+  submissionFailed.value = false
+
+  try {
+    const response = await fetch('https://formsubmit.co/ajax/shraboniakter554@gmail.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        name: form.name,
+        email: form.email,
+        project_type: form.projectType,
+        message: form.message,
+        _subject: `Project inquiry: ${form.projectType}`,
+        _url: window.location.href,
+      }),
+    })
+    const result = await response.json()
+    if (result.success === false || result.success === 'false') {
+      if (typeof result.message === 'string' && result.message.toLowerCase().includes('activation')) {
+        submissionFailed.value = true
+        submissionStatus.value = 'This contact form is awaiting email activation. Please email me directly for now.'
+        return
+      }
+    }
+    if (!response.ok || (result.success !== true && result.success !== 'true')) {
+      throw new Error('Submission failed')
+    }
+
+    submissionStatus.value = 'Your message was submitted. Thank you!'
+    Object.assign(form, { name: '', email: '', projectType: '', message: '' })
+  } catch {
+    submissionFailed.value = true
+    submissionStatus.value = 'Your message could not be sent. Please try again or email me directly.'
+  } finally {
+    isSending.value = false
+  }
 }
 </script>
 
@@ -43,7 +75,7 @@ function prepareEmail() {
           </a>
         </div>
       </div>
-      <form class="contact-form" @submit.prevent="prepareEmail">
+      <form class="contact-form" @submit.prevent="sendMessage">
         <label for="contact-name">Name</label>
         <input id="contact-name" v-model.trim="form.name" name="name" autocomplete="name" placeholder="Your name" maxlength="100" required />
 
@@ -61,8 +93,8 @@ function prepareEmail() {
 
         <label for="contact-message">Message</label>
         <textarea id="contact-message" v-model.trim="form.message" name="message" placeholder="Tell me about your project, timeline, and ideas..." rows="5" minlength="10" maxlength="5000" required />
-        <button type="submit">Send message</button>
-        <p class="contact-form-note">Opens an email draft for you to review and send.</p>
+        <button type="submit" :disabled="isSending">{{ isSending ? 'Sending...' : 'Send message' }}</button>
+        <p v-if="submissionStatus" class="contact-form-note" :class="{ 'contact-form-error': submissionFailed }" role="status" aria-live="polite">{{ submissionStatus }}</p>
       </form>
     </div>
   </section>

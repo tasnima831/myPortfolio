@@ -3,7 +3,8 @@ import SkillIcon from '../../components/SkillIcon.vue'
 
 const groups = [
   { name: 'Frontend', skills: ['HTML', 'CSS', 'JavaScript', 'Tailwind CSS'] },
-  { name: 'Backend', skills: ['PHP', 'MySQL'] },
+  { name: 'Backend', skills: ['PHP', 'Node.js'] },
+  { name: 'Database', skills: ['MySQL'] },
   { name: 'Frameworks', skills: ['Laravel', 'Vue.js'] },
   { name: 'Tools', skills: ['Git', 'GitHub', 'VS Code', 'Figma', 'Notion', 'Vite', 'Vercel'] },
 ]

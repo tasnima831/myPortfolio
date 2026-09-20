@@ -1,9 +1,36 @@
 <script setup>
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import AboutPage from './AboutPage.vue'
 import SkillsPage from './SkillsPage.vue'
 import EducationPage from './EducationPage.vue'
 import ProjectsPage from './ProjectsPage.vue'
 import ContactPage from './ContactPage.vue'
+
+const firstName = 'Tasnima'
+const middleName = 'Akther '
+const lastName = 'Tisha.'
+const totalCharacters = firstName.length + middleName.length + lastName.length
+const typedCharacters = ref(0)
+const visibleFirstName = computed(() => firstName.slice(0, typedCharacters.value))
+const visibleMiddleName = computed(() => middleName.slice(0, Math.max(0, typedCharacters.value - firstName.length)))
+const visibleLastName = computed(() => lastName.slice(0, Math.max(0, typedCharacters.value - firstName.length - middleName.length)))
+let typingTimer
+
+onMounted(() => {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    typedCharacters.value = totalCharacters
+    return
+  }
+
+  typingTimer = window.setInterval(() => {
+    typedCharacters.value += 1
+    if (typedCharacters.value >= totalCharacters) {
+      window.clearInterval(typingTimer)
+    }
+  }, 90)
+})
+
+onUnmounted(() => window.clearInterval(typingTimer))
 </script>
 
 <template>
@@ -11,7 +38,10 @@ import ContactPage from './ContactPage.vue'
     <section id="home" class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
         <p class="eyebrow">Hello, I'm</p>
-        <h1 id="hero-title">Tasnima <span class="hero-name-line">Akther <span class="hero-name-accent">Tisha.</span></span></h1>
+        <h1 id="hero-title" aria-label="Tasnima Akther Tisha.">
+          <span class="hero-name-line" aria-hidden="true"><span :class="{ 'typing-cursor': typedCharacters < firstName.length }">{{ visibleFirstName }}</span></span>
+          <span class="hero-name-line" aria-hidden="true"><span :class="{ 'typing-cursor': typedCharacters >= firstName.length && typedCharacters < totalCharacters }">{{ visibleMiddleName }}<span class="hero-name-accent">{{ visibleLastName }}</span></span></span>
+        </h1>
         <p class="hero-role">Full-stack developer</p>
         <p class="hero-description">I build seamless web applications from frontend to backend, with clean design and solid code.</p>
         <div class="hero-actions">

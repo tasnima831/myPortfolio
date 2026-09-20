@@ -2,6 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
+    <meta name="theme-color" content="#f7f5f0">
+    <script>
+      try {
+        if (localStorage.getItem('portfolio-theme') === 'dark') {
+          document.documentElement.dataset.theme = 'dark'
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0b1220')
+        }
+      } catch {
+        // Use the light theme when browser storage is unavailable.
+      }
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Explore Tasnima Akther Tisha's full-stack development projects, skills, and contact information.">

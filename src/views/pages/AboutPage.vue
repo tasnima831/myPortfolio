@@ -1,3 +1,50 @@
+<script setup>
+import { onMounted, onUnmounted, ref } from 'vue'
+
+const targets = [new Date().getFullYear() - 2024, 3, 1, 2]
+const counts = ref([0, 0, 0, 0])
+const statsList = ref(null)
+let observer
+let animationFrame
+
+function startCounting() {
+  observer?.disconnect()
+  const start = performance.now()
+  const duration = 900
+
+  function update(now) {
+    const progress = Math.min((now - start) / duration, 1)
+    const easedProgress = 1 - (1 - progress) ** 3
+    counts.value = targets.map((target) => Math.min(target, Math.floor(target * easedProgress)))
+
+    if (progress < 1) {
+      animationFrame = requestAnimationFrame(update)
+    } else {
+      counts.value = [...targets]
+    }
+  }
+
+  animationFrame = requestAnimationFrame(update)
+}
+
+onMounted(() => {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) {
+    counts.value = [...targets]
+    return
+  }
+
+  observer = new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting) startCounting()
+  }, { threshold: 0.15 })
+  observer.observe(statsList.value)
+})
+
+onUnmounted(() => {
+  observer?.disconnect()
+  cancelAnimationFrame(animationFrame)
+})
+</script>
+
 <template>
   <section id="about" class="page-section" aria-labelledby="about-title">
     <div class="about-layout">
@@ -18,28 +65,28 @@
           </div>
         </details>
       </div>
-      <ul class="about-stats" aria-label="My development at a glance">
+      <ul ref="statsList" class="about-stats" aria-label="My development at a glance">
         <li class="about-stat">
           <span class="about-stat-index">01</span>
-          <strong class="about-stat-value">{{ new Date().getFullYear() - 2024 }}</strong>
+          <strong class="about-stat-value" :aria-label="`${targets[0]} years coding`"><span aria-hidden="true">{{ counts[0] }}</span></strong>
           <span class="about-stat-label">years coding</span>
           <span class="about-stat-detail">Building for the web</span>
         </li>
         <li class="about-stat">
           <span class="about-stat-index">02</span>
-          <strong class="about-stat-value">3</strong>
+          <strong class="about-stat-value" aria-label="3 projects completed"><span aria-hidden="true">{{ counts[1] }}</span></strong>
           <span class="about-stat-label">projects completed</span>
           <span class="about-stat-detail">Ideas brought to life</span>
         </li>
         <li class="about-stat">
           <span class="about-stat-index">03</span>
-          <strong class="about-stat-value">1</strong>
+          <strong class="about-stat-value" aria-label="1 live project"><span aria-hidden="true">{{ counts[2] }}</span></strong>
           <span class="about-stat-label">live project</span>
           <span class="about-stat-detail">Built and deployed for the web</span>
         </li>
         <li class="about-stat">
           <span class="about-stat-index">04</span>
-          <strong class="about-stat-value">2</strong>
+          <strong class="about-stat-value" aria-label="2 frameworks"><span aria-hidden="true">{{ counts[3] }}</span></strong>
           <span class="about-stat-label">frameworks</span>
           <span class="about-stat-detail">Laravel and Vue.js</span>
         </li>
