@@ -27,5 +27,7 @@ const icons = {
     :class="{ 'skill-icon-light-background': ['GitHub', 'Notion', 'Vercel'].includes(props.name), 'skill-icon-mysql': props.name === 'MySQL' }"
     :src="`/skills/${icons[props.name]}`"
     alt=""
+    loading="lazy"
+    decoding="async"
   />
 </template>

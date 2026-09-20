@@ -12,7 +12,7 @@ const selectedImages = reactive({})
     <div class="project-grid">
       <article v-for="project in projects" :key="project.slug" class="project-card">
         <div class="project-image">
-          <img :src="project.images[selectedImages[project.slug] ?? 0].src" :alt="project.images[selectedImages[project.slug] ?? 0].alt" loading="lazy" />
+          <img :src="project.images[selectedImages[project.slug] ?? 0].src" :alt="project.images[selectedImages[project.slug] ?? 0].alt" loading="lazy" decoding="async" />
           <span class="project-category">{{ project.category }}</span>
           <div class="project-dots" :aria-label="`Choose image for ${project.title}`">
             <button

@@ -38,7 +38,7 @@ function changeImage(direction) {
       </div>
       <div class="detail-gallery-thumbnails">
         <button v-for="(image, index) in project.images" :key="image.src" type="button" :aria-label="`Show image ${index + 1}`" :aria-pressed="activeImage === index" @click="activeImage = index">
-          <img :src="image.src" alt="" loading="lazy" />
+          <img :src="image.src" alt="" loading="lazy" decoding="async" />
         </button>
       </div>
     </section>

@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '../views/pages/HomePage.vue'
-import ProjectDetailPage from '../views/pages/ProjectDetailPage.vue'
 import { projects } from '../data/projects'
 
 const router = createRouter({
@@ -14,7 +13,7 @@ const router = createRouter({
     {
       path: '/projects/:slug',
       name: 'project-detail',
-      component: ProjectDetailPage,
+      component: () => import('../views/pages/ProjectDetailPage.vue'),
     },
   ],
   scrollBehavior(to, from, savedPosition) {
